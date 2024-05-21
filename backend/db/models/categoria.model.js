@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize')
+const { USUARIOS_TABLE } = require('./usuario.model')
 
 const CATEGORIAS_TABLE = 'Categorias'
 
@@ -18,6 +19,15 @@ const categoriaSchema = {
     allowNull: false,
     field: 'tipo_transaccion',
     type: DataTypes.ENUM('ingreso', 'egreso', 'ahorro')
+  },
+  usuario: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    field: 'usuario_id',
+    references: {
+      model: USUARIOS_TABLE,
+      key: 'id'
+    }
   }
 }
 
@@ -28,6 +38,10 @@ class Categoria extends Model {
       foreignKey: 'categoria',
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL'
+    })
+    this.belongsTo(models.Usuario, {
+      as: 'usuarioAsociado',
+      foreignKey: 'usuario'
     })
   }
   static config(sequelize) {

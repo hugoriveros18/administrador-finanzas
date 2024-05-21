@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize')
+const { USUARIOS_TABLE } = require('./usuario.model')
 
 const CUENTAS_TABLE = 'Cuentas'
 
@@ -29,6 +30,15 @@ const cuentaSchema = {
     field: 'numero_cuenta',
     type: DataTypes.STRING
   },
+  usuario: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    field: 'usuario_id',
+    references: {
+      model: USUARIOS_TABLE,
+      key: 'id'
+    }
+  },
 }
 
 class Cuenta extends Model {
@@ -38,6 +48,10 @@ class Cuenta extends Model {
       foreignKey: 'cuenta',
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL'
+    })
+    this.belongsTo(models.Usuario, {
+      as: 'usuarioAsociado',
+      foreignKey: 'usuario'
     })
   }
   static config(sequelize) {

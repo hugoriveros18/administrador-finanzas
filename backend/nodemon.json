@@ -4,9 +4,9 @@
     "node_modules/**/node_modules"
   ],
   "watch": [
-    "api/**/*.js",
-    "api/**/*.graphql",
-    "api/**/*.gql"
+    "src/**/*.js",
+    "src/**/*.graphql",
+    "src/**/*.gql"
   ],
   "ext": "js,graphql,gql"
 }
