@@ -1,29 +1,48 @@
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { Strategy } = require('passport-local');
+const { GraphQLLocalStrategy } = require('graphql-passport');
 const bcrypt = require('bcrypt');
-const { obtenerUsuario, generarErrorGQL } = require('../../modules/utils');
+const { generarErrorGQL } = require('../../modules/utils.js');
 
-const LocalStrategy = new Strategy({
-  usernameField: 'email',
-  passwordField: 'password'
-},
+const LocalStrategy = new GraphQLLocalStrategy(
   async (email, password, done) => {
     try {
       const usuario = await models.Usuario.findOne({ where: { email } })
       if (!usuario) {
-        return done(null, false, { message: 'El correo no esta registrado' })
+        generarErrorGQL(
+          'No se encontró el usuario con el email proporcionado',
+          'USUARIO_NO_EXISTE',
+          404
+        )
+      }
+
+      if(!usuario.dataValues.password) {
+        generarErrorGQL(
+          'El proceso de autenticación debe realizarse con la plataforma de registro correspondiente',
+          'AUTENTICACION_NO_PERMITIDA',
+          401
+        )
       }
 
       const isValid = await bcrypt.compare(password, usuario.dataValues.password)
       if (!isValid) {
-        return done(null, false, { message: 'El correo y/o la contraseña no coinciden' })
+        generarErrorGQL(
+          'El correo y/o la contraseña no coinciden',
+          'CONTRASENA_INCORRECTA',
+          401
+        )
       }
 
-      return done(null, usuario.dataValues)
+      const usuarioInfo = {
+        ...usuario.dataValues
+      }
+      delete usuarioInfo.password
+      
+      done(null, usuarioInfo)
     } catch (error) {
       done(error, false)
     }
-  })
+  }
+)
 
 module.exports = LocalStrategy

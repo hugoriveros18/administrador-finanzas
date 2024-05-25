@@ -1,13 +1,9 @@
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { obtenerCategoria, verificarToken, verificarPermisosRolId } = require('../utils.js');
+const { obtenerCategoria, verificarPermisosRolId, validarJwt } = require('../utils.js');
 
-const categoria = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const categoria = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id } = args
   const categoria = await obtenerCategoria(id)
 
@@ -15,13 +11,10 @@ const categoria = async (_, args, contextValue) => {
 
   return categoria.dataValues
 }
-const listaCategorias = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userId = payload.id
-  const userRol = payload.rol
-
+const listaCategorias = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { usuario } = args
+
   const categoriasData = userRol === 'admin' 
   ? await models.Categoria.findAll({ where: usuario ? { usuario } : null}) 
   : await models.Categoria.findAll({ where: { usuario: userId }})
@@ -29,20 +22,18 @@ const listaCategorias = async (_, args, contextValue) => {
   const categorias = categoriasData.map(categoria => categoria.dataValues)
   return categorias.dataValues
 }
-const crearCategoria = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
+const crearCategoria = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { nombre, tipo, usuario } = args
 
   if(userRol === 'admin' && !usuario) {
     generarErrorGQL(
       'El campo usuario es requerido para crear una categoria como administrador',
-      'CAMPO_REQUERIDO'
+      'CAMPO_REQUERIDO',
+      400
     )
   }
 
-  const userId = payload.id
   const categoria = await models.Categoria.create({
     nombre,
     tipo,
@@ -51,12 +42,8 @@ const crearCategoria = async (_, args, contextValue) => {
 
   return categoria.dataValues
 }
-const eliminarCategoria = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const eliminarCategoria = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id } = args
   const categoria = await obtenerCategoria(id)
 
@@ -65,12 +52,8 @@ const eliminarCategoria = async (_, args, contextValue) => {
   await categoria.destroy()
   return categoria.dataValues
 }
-const modificarCategoria = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const modificarCategoria = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id, ...cambios } = args
   const categoria = await obtenerCategoria(id)
 

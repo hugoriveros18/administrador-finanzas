@@ -1,13 +1,9 @@
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { obtenerCuenta, verificarToken, generarErrorGQL, verificarPermisosRolId } = require('../utils.js');
+const { obtenerCuenta, generarErrorGQL, verificarPermisosRolId, validarJwt } = require('../utils.js');
 
-const cuenta = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const cuenta = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id } = args
   const cuenta = await obtenerCuenta(id)
 
@@ -15,13 +11,10 @@ const cuenta = async (_, args, contextValue) => {
 
   return cuenta.dataValues
 }
-const listaCuentas = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userId = payload.id
-  const userRol = payload.rol
-
+const listaCuentas = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { usuario } = args
+
   const cuentasData = userRol === 'admin' 
   ? await models.Cuenta.findAll({ where: usuario ? { usuario } : null}) 
   : await models.Cuenta.findAll({ where: { usuario: userId }})
@@ -29,20 +22,18 @@ const listaCuentas = async (_, args, contextValue) => {
   const cuentas = cuentasData.map(cuenta => cuenta.dataValues)
   return cuentas
 }
-const crearCuenta = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
+const crearCuenta = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { nombre, entidadFinanciera, tipoCuenta, numeroCuenta, usuario } = args
 
   if(userRol === 'admin' && !usuario) {
     generarErrorGQL(
       'El campo usuario es requerido para crear una cuenta como administrador',
-      'CAMPO_REQUERIDO'
+      'CAMPO_REQUERIDO',
+      400
     )
   }
 
-  const userId = payload.id
   const cuenta = await models.Cuenta.create({
     nombre,
     entidadFinanciera,
@@ -53,12 +44,8 @@ const crearCuenta = async (_, args, contextValue) => {
 
   return cuenta.dataValues
 }
-const eliminarCuenta = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const eliminarCuenta = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id } = args
   const cuenta = await obtenerCuenta(id)
 
@@ -67,12 +54,8 @@ const eliminarCuenta = async (_, args, contextValue) => {
   await cuenta.destroy()
   return cuenta.dataValues
 }
-const modificarCuenta = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const modificarCuenta = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id, ...cambios } = args
   const cuenta = await obtenerCuenta(id)
 

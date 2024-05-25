@@ -4,12 +4,10 @@ const bcrypt = require('bcrypt')
 const { randomUUID } = require('crypto')
 const jwt = require('jsonwebtoken')
 const { config } = require('../../../config/config.js');
-const { generarErrorGQL, obtenerUsuario, verificarToken} = require('../utils.js')
+const { generarErrorGQL, validarJwt, obtenerUsuarioPorId, verificarPermisosRolId } = require('../utils.js')
 
-const listaUsuarios = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
+const listaUsuarios = async (_, args, context) => {
+  const { userRol } = await validarJwt(context)
   if(userRol !== 'admin') {
     generarErrorGQL(
       'No tienes permisos para realizar esta acción',
@@ -36,27 +34,40 @@ const crearUsuario = async (_, args) => {
   })
   return usuario.dataValues
 }
-const login = async (_, args) => {
-  const { email, password } = args
+const modificarInfoGeneralUsuario = async (_, args, context) => {
+  const { id, ...cambios } = args
+  const { userRol, userId } = await validarJwt(context)
 
-  const usuario = await obtenerUsuario(email)
-  const valid = await bcrypt.compare(password, usuario.dataValues.password)
-  if (!valid) {
+  if(userRol === 'admin' && !id) {
     generarErrorGQL(
-      'El correo y/o la contraseña no coinciden',
-      'CONTRASENA_INCORRECTA'
+      'el parametro id es requerido para realizar esta acción como administrador',
+      'ID_REQUERIDO',
+      400
     )
   }
 
+  const userQueryId = userRol === 'admin' ? id : userId
+  const usuario = await obtenerUsuarioPorId(userQueryId)
+
+  verificarPermisosRolId(userRol, userId, usuario.dataValues.id)
+
+  const usuarioModificado = await usuario.update(cambios)
+  console.log('usuarioModificado.dataValues',usuarioModificado.dataValues)
+  return usuarioModificado.dataValues
+}
+const login = async (_, args, contextValue) => {
+  const { email, password } = args
+  const { user } = await contextValue.authenticate('graphql-local', { email, password })
   const payload = {
-    id: usuario.dataValues.id,
-    rol: usuario.dataValues.rol
+    userId: user.id,
+    userRol: user.rol
   }
+
   const SECRET_KEY = config.jwtSecret
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
 
   return {
-    usuario: usuario.dataValues,
+    usuario: user,
     token
   }
 }
@@ -67,6 +78,7 @@ const resolvers = {
   },
   Mutation: {
     crearUsuario,
+    modificarInfoGeneralUsuario,
     login
   }
 };

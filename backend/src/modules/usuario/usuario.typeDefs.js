@@ -32,6 +32,11 @@ const typeDefs = `#graphql
       email: String!
       password: String!
     ): Usuario!
+    modificarInfoGeneralUsuario(
+      id: String
+      nombre: String
+      apellidos: String
+    ): Usuario!
     login(
       email: String!
       password: String!

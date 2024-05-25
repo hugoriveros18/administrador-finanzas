@@ -22,32 +22,19 @@ const usuarioSchema = {
     unique: true
   },
   password: {
-    allowNull: false,
     type: DataTypes.STRING
-  },
-  totalIngresos: {
-    allowNull: false,
-    field: 'total_ingresos',
-    type: DataTypes.INTEGER,
-    defaultValue: 0
-  },
-  totalEgresos: {
-    allowNull: false,
-    field: 'total_egresos',
-    type: DataTypes.INTEGER,
-    defaultValue: 0
-  },
-  totalAhorro: {
-    allowNull: false,
-    field: 'total_ahorro',
-    type: DataTypes.INTEGER,
-    defaultValue: 0
   },
   rol: {
     allowNull: false,
     type: DataTypes.ENUM('admin', 'user'),
     defaultValue: 'user'
-  }
+  },
+  googleId: {
+    type: DataTypes.STRING,
+  },
+  // facebookId: {
+  //   type: DataTypes.STRING,
+  // },
 }
 
 class Usuario extends Model {

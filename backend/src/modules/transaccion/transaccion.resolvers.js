@@ -1,14 +1,10 @@
 const { Op, literal } = require('sequelize');
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { obtenerCategoria, obtenerCuenta, obtenerTransaccion, verificarPermisosRolId } = require('../utils.js');
+const { obtenerCategoria, obtenerCuenta, obtenerTransaccion, verificarPermisosRolId, validarJwt } = require('../utils.js');
 
-const transaccion = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const transaccion = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id } = args
   const transaccionData = await obtenerTransaccion(id)
 
@@ -25,12 +21,8 @@ const transaccion = async (_, args, contextValue) => {
   }
   return transaccion
 }
-const listaTransacciones = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userId = payload.id
-  const userRol = payload.rol
-
+const listaTransacciones = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { year, month, cuentaId, usuarioId, categoriaId, tipoTransaccion } = args
 
   const whereConditions = {
@@ -69,20 +61,18 @@ const listaTransacciones = async (_, args, contextValue) => {
 
   return transacciones
 }
-const crearTransaccion = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
+const crearTransaccion = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { valor, descripcion, fecha, usuarioId, cuentaId, categoriaId } = args
 
   if(userRol === 'admin' && !usuarioId) {
     generarErrorGQL(
       'El campo usuarioId es requerido para crear una transaccion como administrador',
-      'CAMPO_REQUERIDO'
+      'CAMPO_REQUERIDO',
+      400
     )
   }
 
-  const userId = payload.id
   const transaccion = await models.Transaccion.create({
     valor,
     descripcion,
@@ -94,12 +84,8 @@ const crearTransaccion = async (_, args, contextValue) => {
 
   return transaccion.dataValues
 }
-const eliminarTransaccion = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const eliminarTransaccion = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id } = args
   const transaccion = await obtenerTransaccion(id)
 
@@ -116,12 +102,8 @@ const eliminarTransaccion = async (_, args, contextValue) => {
     categoria: transaccion.categoriaAsociada.dataValues
   }
 }
-const modificarTransaccion = async (_, args, contextValue) => {
-  const { token } = contextValue
-  const payload = verificarToken(token)
-  const userRol = payload.rol
-  const userId = payload.id
-
+const modificarTransaccion = async (_, args, context) => {
+  const { userId, userRol } = await validarJwt(context)
   const { id, cuentaId, categoriaId, ...cambios } = args
   const transaccion = await obtenerTransaccion(id)
 

@@ -2,7 +2,7 @@ const { GraphQLError } = require('graphql');
 const jwt = require('jsonwebtoken')
 const { sequelize } = require('../context/index.js');
 const { models } = sequelize
-const { config } = require('../../config/config.js');
+const { randomUUID } = require('crypto')
 
 const generarErrorGQL = (mensaje, codigo, httpStatus = 500) => {
   throw new GraphQLError(mensaje, {
@@ -50,8 +50,8 @@ const obtenerTransaccion = async (id) => {
   return transaccion
 }
 
-const obtenerUsuario = async (email) => {
-  const usuario = await models.Usuario.findOne({ where: { email } })
+const obtenerUsuarioPorId = async (id) => {
+  const usuario = await models.Usuario.findOne({ where: { id } })
   if(!usuario) {
     generarErrorGQL(
       'No se encontró el usuario con el email proporcionado',
@@ -61,26 +61,16 @@ const obtenerUsuario = async (email) => {
   return usuario
 }
 
-const verificarToken = (token) => {
-  if(!token) {
+const validarJwt = async (context) => {
+  const { user } = await context.authenticate('jwt', { session: false })
+  if(!user) {
     generarErrorGQL(
       'Usuario no autenticado',
       'UNAUTHENTICATED',
       401
     )
   }
-
-  const SECRET_KEY = config.jwtSecret
-  try {
-    const payload = jwt.verify(token, SECRET_KEY)
-    return payload
-  } catch (error) {
-    generarErrorGQL(
-      error,
-      'TOKEN_INVALIDO',
-      401
-    )
-  }
+  return user
 }
 
 const verificarPermisosRolId = (rol, payloadUserId, recordUserId) => {
@@ -93,12 +83,44 @@ const verificarPermisosRolId = (rol, payloadUserId, recordUserId) => {
   }
 }
 
+async function findOrCreateUser(profile, provider) {
+  const usuario = await models.Usuario.findOne({ where: { email: profile.email } })
+  if(!usuario) {
+    const id = randomUUID();
+    const usuarioNuevo = {
+      id,
+      nombre: profile.given_name,
+      apellidos: profile.family_name,
+      email: profile.email,
+      rol: 'user'
+    }
+
+    provider === 'google' ? usuarioNuevo.googleId = profile.sub : usuarioNuevo.facebookId = profile.sub
+
+    console.log('usuarioNuevo', usuarioNuevo)
+    const usuarioCreado = await models.Usuario.create(usuarioNuevo)
+    return usuarioCreado.dataValues
+  }
+
+  const providerIdValue = provider === 'google' ? usuario.dataValues.googleId : usuario.dataValues.facebookId
+  if(!providerIdValue) {
+    const usuarioActualizado = provider === 'google' 
+    ? await usuario.update({ googleId: profile.id }) 
+    : await usuario.update({ facebookId: profile.id })
+    
+    return usuarioActualizado.dataValues
+  }
+
+  return usuario.dataValues
+}
+
 module.exports = {
   generarErrorGQL,
   obtenerCategoria,
   obtenerCuenta,
   obtenerTransaccion,
-  obtenerUsuario,
-  verificarToken,
-  verificarPermisosRolId
+  obtenerUsuarioPorId,
+  verificarPermisosRolId,
+  validarJwt,
+  findOrCreateUser
 }
