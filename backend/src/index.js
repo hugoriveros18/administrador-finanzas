@@ -9,6 +9,8 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken')
 const { typeDefs, resolvers } = require('./schema/index.js');
 const { config } = require('../config/config.js');
+const cookieParser = require('cookie-parser');
+const { validarJwt } = require('./modules/utils.js');
 
 require('./auth/index.js')
 
@@ -28,9 +30,15 @@ async function connectToServer() {
 
   await server.start();
 
+  const corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true
+  }
+
   app.use(
     '/graphql',
-    cors(),
+    cors(corsOptions),
+    cookieParser(),
     express.json(),
     expressMiddleware(server, {
       context: ({ req, res }) => buildContext({ req, res })
@@ -42,25 +50,35 @@ async function connectToServer() {
   )
 
   app.get('/auth/google/callback',
-    passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+    passport.authenticate('google', { session: false, failureRedirect: 'http://localhost:3000/login'}),
     async (req, res) => {
       const user = await req.user
       if(user) {
-        delete user.password
-        delete user.googleId
-        delete user.facebookId
-
-        const payload = {
-          userId: user.id,
-          userRol: user.rol,
-          provider: 'google'
+        try {
+          const payload = {
+            userId: user.id,
+            userRol: user.rol
+          }
+        
+          const SECRET_KEY = config.jwtSecret
+          const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '24h' });
+  
+          const UNA_DIA_EN_MS = 86400000
+  
+          res.cookie('auth-token', token, {
+            httpOnly: true,
+            secure: false,
+            maxAge: UNA_DIA_EN_MS,
+          })
+  
+          res.redirect('http://localhost:3000')
+        } catch (error) {
+          console.log('error', error)
+          res.redirect('http://localhost:3000/login')
         }
-      
-        const SECRET_KEY = config.jwtSecret
-        const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
-        res.send({ user, token })
+      } else {
+        res.redirect('http://localhost:3000/login')
       }
-      console.log('req.user', await req.user)
     }
   )
 

@@ -1,27 +1,13 @@
 const { GraphQLError } = require('graphql');
-const jwt = require('jsonwebtoken')
 const { sequelize } = require('../context/index.js');
-const { models } = sequelize
-const { randomUUID } = require('crypto')
-
-const generarErrorGQL = (mensaje, codigo, httpStatus = 500) => {
-  throw new GraphQLError(mensaje, {
-    extensions: {
-      code: codigo,
-      http: {
-        status: httpStatus
-      }
-    }
-  });
-}
+const { models } = sequelize;
+const { randomUUID } = require('crypto');
+const boom = require('@hapi/boom');
 
 const obtenerCategoria = async (id) => {
   const categoria = await models.Categoria.findByPk(id)
   if(!categoria) {
-    generarErrorGQL(
-      'No se encontró la categoría con el ID proporcionado',
-      'CATEGORIA_NO_EXISTE'
-    )
+    throw boom.notFound('Categoría no encontrada')
   }
   return categoria
 }
@@ -29,10 +15,7 @@ const obtenerCategoria = async (id) => {
 const obtenerCuenta = async (id) => {
   const cuenta = await models.Cuenta.findByPk(id)
   if(!cuenta) {
-    generarErrorGQL(
-      'No se encontró la cuenta con el ID proporcionado',
-      'CUENTA_NO_EXISTE'
-    )
+    throw boom.notFound('Cuenta no encontrada')
   }
   return cuenta
 }
@@ -42,10 +25,7 @@ const obtenerTransaccion = async (id) => {
     include: ['cuentaAsociada', 'categoriaAsociada', 'usuarioAsociado']
   })
   if(!transaccion) {
-    generarErrorGQL(
-      'No se encontró la transacción con el ID proporcionado',
-      'TRANSACCION_NO_EXISTE'
-    )
+    throw boom.notFound('Transacción no encontrada')
   }
   return transaccion
 }
@@ -53,10 +33,7 @@ const obtenerTransaccion = async (id) => {
 const obtenerUsuarioPorId = async (id) => {
   const usuario = await models.Usuario.findOne({ where: { id } })
   if(!usuario) {
-    generarErrorGQL(
-      'No se encontró el usuario con el email proporcionado',
-      'USUARIO_NO_EXISTE'
-    )
+    throw boom.notFound('Usuario no encontrado')
   }
   return usuario
 }
@@ -64,26 +41,18 @@ const obtenerUsuarioPorId = async (id) => {
 const validarJwt = async (context) => {
   const { user } = await context.authenticate('jwt', { session: false })
   if(!user) {
-    generarErrorGQL(
-      'Usuario no autenticado',
-      'UNAUTHENTICATED',
-      401
-    )
+    throw boom.unauthorized('Usuario no autenticado')
   }
   return user
 }
 
 const verificarPermisosRolId = (rol, payloadUserId, recordUserId) => {
   if(rol !== 'admin' && payloadUserId !== recordUserId) {
-    generarErrorGQL(
-      'No tienes permisos para realizar esta acción',
-      'PERMISOS_INSUFICIENTES',
-      403
-    )
+    throw boom.unauthorized('No tienes permisos para acceder a este recurso')
   }
 }
 
-async function findOrCreateUser(profile, provider) {
+async function findOrCreateUser(profile) {
   const usuario = await models.Usuario.findOne({ where: { email: profile.email } })
   if(!usuario) {
     const id = randomUUID();
@@ -95,19 +64,15 @@ async function findOrCreateUser(profile, provider) {
       rol: 'user'
     }
 
-    provider === 'google' ? usuarioNuevo.googleId = profile.sub : usuarioNuevo.facebookId = profile.sub
-
-    console.log('usuarioNuevo', usuarioNuevo)
+    usuarioNuevo.googleId = profile.sub
     const usuarioCreado = await models.Usuario.create(usuarioNuevo)
     return usuarioCreado.dataValues
   }
 
-  const providerIdValue = provider === 'google' ? usuario.dataValues.googleId : usuario.dataValues.facebookId
+  const providerIdValue = usuario.dataValues.googleId
   if(!providerIdValue) {
-    const usuarioActualizado = provider === 'google' 
-    ? await usuario.update({ googleId: profile.id }) 
-    : await usuario.update({ facebookId: profile.id })
-    
+    const usuarioActualizado = await usuario.update({ googleId: profile.sub })
+
     return usuarioActualizado.dataValues
   }
 
@@ -115,7 +80,6 @@ async function findOrCreateUser(profile, provider) {
 }
 
 module.exports = {
-  generarErrorGQL,
   obtenerCategoria,
   obtenerCuenta,
   obtenerTransaccion,

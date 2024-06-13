@@ -32,6 +32,11 @@ const usuarioSchema = {
   googleId: {
     type: DataTypes.STRING,
   },
+  terminos: {
+    allowNull: false,
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   // facebookId: {
   //   type: DataTypes.STRING,
   // },

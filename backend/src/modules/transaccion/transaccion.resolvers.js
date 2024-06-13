@@ -2,6 +2,8 @@ const { Op, literal } = require('sequelize');
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
 const { obtenerCategoria, obtenerCuenta, obtenerTransaccion, verificarPermisosRolId, validarJwt } = require('../utils.js');
+const boom = require('@hapi/boom');
+const { off } = require('process');
 
 const transaccion = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
@@ -23,7 +25,7 @@ const transaccion = async (_, args, context) => {
 }
 const listaTransacciones = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
-  const { year, month, cuentaId, usuarioId, categoriaId, tipoTransaccion } = args
+  const { year, month, cuentaId, usuarioId, categoriaId, tipoTransaccion, pagina, itemsPorPagina } = args
 
   const whereConditions = {
     [Op.and]: []
@@ -36,6 +38,12 @@ const listaTransacciones = async (_, args, context) => {
   if (cuentaId) whereConditions[Op.and].push({ cuenta: cuentaId })
   if (categoriaId) whereConditions[Op.and].push({ categoria: categoriaId })
 
+  const limit = itemsPorPagina ?? 10
+  const offset = pagina ? (pagina - 1) * itemsPorPagina : 0
+
+  if (limit < 1) throw boom.badRequest('El numero de items por pagina debe ser mayor a 0')
+  if (offset < 0) throw boom.badRequest('El numero de pagina debe ser mayor a 0')
+
   const transaccionesData = await models.Transaccion.findAll({
     include: [
       'cuentaAsociada',
@@ -45,7 +53,10 @@ const listaTransacciones = async (_, args, context) => {
         where: tipoTransaccion ? { tipo: tipoTransaccion } : null
       },
     ],
-    where: whereConditions
+    where: whereConditions,
+    limit,
+    offset,
+    order: [['fecha_transaccion', 'DESC']]
   })
   const transacciones = transaccionesData.map(transaccion => {
     return {
@@ -61,16 +72,22 @@ const listaTransacciones = async (_, args, context) => {
 
   return transacciones
 }
+const existenTransacciones = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+  const transacciones = await models.Transaccion.count({
+    where: {
+      usuario: userId
+    },
+    limit: 1
+  })
+  return transacciones > 0
+}
 const crearTransaccion = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
   const { valor, descripcion, fecha, usuarioId, cuentaId, categoriaId } = args
 
   if(userRol === 'admin' && !usuarioId) {
-    generarErrorGQL(
-      'El campo usuarioId es requerido para crear una transaccion como administrador',
-      'CAMPO_REQUERIDO',
-      400
-    )
+    throw boom.badRequest('El campo usuarioId es requerido para crear una transaccion como administrador')
   }
 
   const transaccion = await models.Transaccion.create({
@@ -137,7 +154,8 @@ const modificarTransaccion = async (_, args, context) => {
 const resolvers = {
   Query: {
     transaccion,
-    listaTransacciones
+    listaTransacciones,
+    existenTransacciones
   },
   Mutation: {
     crearTransaccion,

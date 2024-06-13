@@ -9,9 +9,9 @@ const typeDefs = `#graphql
   type Cuenta {
     id: Int!
     nombre: String!
-    entidadFinanciera: String!
     tipoCuenta: TipoCuenta!
     numeroCuenta: String!
+    color: String!
   }
 
   type Query {
@@ -22,18 +22,18 @@ const typeDefs = `#graphql
   type Mutation {
     crearCuenta(
       nombre: String!
-      entidadFinanciera: String!
       tipoCuenta: TipoCuenta!
       numeroCuenta: String!
+      color: String!
       usuario: String
     ): Cuenta!
     eliminarCuenta(id: Int!): Cuenta
     modificarCuenta(
       id: Int!
       nombre: String
-      entidadFinanciera: String
       tipoCuenta: TipoCuenta
       numeroCuenta: String
+      color: String
     ): Cuenta
   }
 `

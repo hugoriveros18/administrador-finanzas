@@ -29,7 +29,10 @@ const typeDefs = `#graphql
       cuentaId: Int
       categoriaId:Int
       tipoTransaccion: TipoTransaccion
+      pagina: Int
+      itemsPorPagina: Int
     ): [Transaccion]!
+    existenTransacciones: Boolean!
   }
 
   type Mutation {
@@ -37,7 +40,7 @@ const typeDefs = `#graphql
       valor: Int!
       descripcion: String!
       fecha: String!
-      usuarioId: String!
+      usuarioId: String
       cuentaId: Int!
       categoriaId: Int!
     ): RespuestaGeneralTransaccion!

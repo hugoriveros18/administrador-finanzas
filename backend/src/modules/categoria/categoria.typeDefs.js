@@ -3,7 +3,6 @@ const typeDefs = `#graphql
   enum TipoTransaccion {
     ingreso
     egreso
-    ahorro
   }
 
   type Categoria {
@@ -12,9 +11,15 @@ const typeDefs = `#graphql
     tipo: TipoTransaccion!
   }
 
+  type ListaCategorias {
+    ingreso: [Categoria]!
+    egreso: [Categoria]!
+    count: Int!
+  }
+
   type Query {
     categoria(id: Int!): Categoria
-    listaCategorias(usuario: String): [Categoria]!
+    listaCategorias(usuario: String): ListaCategorias!
   }
 
   type Mutation {
@@ -24,7 +29,7 @@ const typeDefs = `#graphql
       usuario: String
     ): Categoria!
     eliminarCategoria(id: Int!): Categoria
-    modificarCategoria(id: Int!, nombre: String, tipo: TipoTransaccion): Categoria
+    modificarCategoria(id: Int!, nombre: String): Categoria
   }
   
 `

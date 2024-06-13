@@ -18,7 +18,7 @@ const categoriaSchema = {
   tipo: {
     allowNull: false,
     field: 'tipo_transaccion',
-    type: DataTypes.ENUM('ingreso', 'egreso', 'ahorro')
+    type: DataTypes.ENUM('ingreso', 'egreso')
   },
   usuario: {
     allowNull: false,
