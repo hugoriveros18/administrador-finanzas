@@ -171,7 +171,7 @@ export default function SingupForm() {
         )}
       </div>
       <Button
-        className="mt-6 w-full font-bold bg-redVerminton"
+        className="mt-6 w-full font-bold text-white bg-redVerminton"
         color="default"
         isLoading={loading}
         radius="none"

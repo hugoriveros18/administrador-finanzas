@@ -6,7 +6,7 @@ export const LISTA_TRANSACCIONES = gql`
     $month: Int
     $cuentaId: Int
     $categoriaId: Int
-    $tipoTransaccion: TipoTransaccion
+    $tipo: TipoTransaccion
     $pagina: Int
     $itemsPorPagina: Int
   ) {
@@ -15,17 +15,29 @@ export const LISTA_TRANSACCIONES = gql`
       month: $month
       cuentaId: $cuentaId
       categoriaId: $categoriaId
-      tipoTransaccion: $tipoTransaccion
+      tipo: $tipo
       pagina: $pagina
       itemsPorPagina: $itemsPorPagina
     ) {
-      id
-      valor
-      descripcion
-      fecha
-      usuario
-      cuenta
-      categoria
+      transacciones {
+        id
+        valor
+        descripcion
+        tipo
+        fecha
+        cuenta {
+          id
+          nombre
+          color
+        }
+        categoria {
+          id
+          nombre
+          tipo
+        }
+      }
+      totalPaginas
+      totalTransacciones
     }
   }
 `;

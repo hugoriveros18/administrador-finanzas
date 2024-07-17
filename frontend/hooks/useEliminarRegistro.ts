@@ -1,19 +1,14 @@
 import { DocumentNode, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
 
-import { revalidatePathData } from "@/components/actions";
+import { revalidateAllPathsData } from "@/components/actions";
 
 interface Props {
   id: number | string;
   gqlMutation: DocumentNode;
-  pathToValidate?: string;
 }
 
-export default function useEliminarRegistro({
-  id,
-  gqlMutation,
-  pathToValidate,
-}: Props) {
+export default function useEliminarRegistro({ id, gqlMutation }: Props) {
   const [eliminarRegistro, { error }] = useMutation(gqlMutation);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -24,9 +19,7 @@ export default function useEliminarRegistro({
           id,
         },
       });
-      if (pathToValidate) {
-        revalidatePathData({ path: pathToValidate });
-      }
+      revalidateAllPathsData();
 
       return true;
     } catch (error) {

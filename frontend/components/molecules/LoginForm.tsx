@@ -92,7 +92,7 @@ export default function LoginForm() {
         }}
       />
       <Button
-        className="mt-6 w-full font-bold bg-redVerminton"
+        className="mt-6 w-full font-bold text-white bg-redVerminton"
         color="default"
         endContent={
           <span className="text-white">

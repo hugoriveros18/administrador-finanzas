@@ -29,6 +29,7 @@ interface Props {
   tituloModal: string;
   botonConfirmacion: string;
   gqlMutation: DocumentNode;
+  onSuccessfulMutation?: () => void;
 }
 
 const DEFAUTL_CUENTA: Cuenta = {
@@ -44,6 +45,7 @@ export default function CuentaModal({
   tituloModal,
   botonConfirmacion,
   gqlMutation,
+  onSuccessfulMutation,
 }: Props) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -157,6 +159,7 @@ export default function CuentaModal({
                     const result = await guardarCuenta();
 
                     if (result) {
+                      onSuccessfulMutation?.();
                       onClose();
                     }
                   }}

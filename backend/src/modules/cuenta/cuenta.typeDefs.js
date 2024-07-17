@@ -16,6 +16,7 @@ const typeDefs = `#graphql
 
   type Query {
     cuenta(id: Int!): Cuenta
+    saldoCuenta(id: Int!): Int!
     listaCuentas(usuario: String): [Cuenta]!
   }
 

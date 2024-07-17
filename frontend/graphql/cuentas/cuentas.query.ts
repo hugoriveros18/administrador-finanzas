@@ -11,3 +11,9 @@ export const LISTA_CUENTAS = gql`
     }
   }
 `;
+
+export const SALDO_CUENTA = gql`
+  query SaldoCuenta($id: Int!) {
+    saldoCuenta(id: $id)
+  }
+`;

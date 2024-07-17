@@ -29,6 +29,11 @@ const transaccionSchema = {
     allowNull: false,
     type: DataTypes.STRING
   },
+  tipo: {
+    allowNull: false,
+    field: 'tipo_transaccion',
+    type: DataTypes.ENUM('ingreso', 'egreso')
+  },
   fecha: {
     allowNull: false,
     type: DataTypes.DATE,

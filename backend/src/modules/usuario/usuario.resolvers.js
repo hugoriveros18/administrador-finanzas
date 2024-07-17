@@ -1,11 +1,12 @@
 const { sequelize } = require('../../context/index.js');
+const { Op, literal, fn, col } = require('sequelize');
 const { models } = sequelize
 const bcrypt = require('bcrypt')
 const { randomUUID } = require('crypto')
 const jwt = require('jsonwebtoken')
 const { config } = require('../../../config/config.js');
 const { validarJwt, obtenerUsuarioPorId, verificarPermisosRolId } = require('../utils.js')
-const boom = require('@hapi/boom')
+const boom = require('@hapi/boom');
 
 const UNA_DIA_EN_MS = 86400000
 
@@ -75,7 +76,6 @@ const crearUsuario = async (_, args, context) => {
   
     const data = {
       usuario: usuarioInfo,
-      token
     }
   
     context.res.cookie('auth-token', token, {
@@ -127,16 +127,86 @@ const login = async (_, args, context) => {
   })
 
   return {
-    usuario: user,
-    token
+    usuario: user
   }
+}
+const resumenFinanciero = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+  const { year, month } = args
+
+  const whereConditions = {
+    [Op.and]: [{ usuario: userId }]
+  }
+  if (year) whereConditions[Op.and].push(literal(`EXTRACT(YEAR FROM "fecha_transaccion") = ${year}`))
+  if (month) whereConditions[Op.and].push(literal(`EXTRACT(MONTH FROM "fecha_transaccion") = ${month}`))
+
+  const ingresosData = await models.Transaccion.sum('valor', {
+    where: {
+      ...whereConditions,
+      tipo: 'ingreso'
+    }
+  })
+  const egresosData = await models.Transaccion.sum('valor', {
+    where: {
+      ...whereConditions,
+      tipo: 'egreso'
+    }
+  })
+
+  const result ={
+    ingresos: ingresosData || 0,
+    egresos: egresosData || 0,
+    balance: (ingresosData || 0) - (egresosData || 0)
+  }
+
+  return result
+}
+const disponibleCuenta = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+
+  const ingresosData = await models.Transaccion.sum('valor', {
+    where: {
+      tipo: 'ingreso'
+    }
+  })
+  const egresosData = await models.Transaccion.sum('valor', {
+    where: {
+      tipo: 'egreso'
+    }
+  })
+
+  const disponible = (ingresosData || 0) - (egresosData || 0)
+
+  return disponible;
+}
+const activeYears = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+  const years = await models.Transaccion.findAll({
+    attributes: [
+      [literal('DISTINCT EXTRACT(YEAR FROM "fecha_transaccion")'), 'year'],
+    ],
+    where: {
+      usuario: userId
+    },
+    group: literal('year'),
+    order: [[literal('year'), 'DESC']]
+  })
+
+  const result = years.map(year => year.dataValues.year)
+
+
+  return result
 }
 
 const resolvers = {
   Query: {
     usuario,
     listaUsuarios,
-    isAuth
+    isAuth,
+    resumenFinanciero,
+    disponibleCuenta,
+    activeYears,
+    prueba: () => "Hola mundo"
   },
   Mutation: {
     crearUsuario,

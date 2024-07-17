@@ -4,9 +4,11 @@ import { NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   if (
+    request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/categorias") ||
     request.nextUrl.pathname.startsWith("/cuentas") ||
-    request.nextUrl.pathname.startsWith("/trasacciones")
+    request.nextUrl.pathname.startsWith("/transacciones") ||
+    request.nextUrl.pathname.startsWith("/movimientos")
   ) {
     let authToken = request.cookies.get("auth-token")?.value;
 

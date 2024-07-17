@@ -73,7 +73,6 @@ async function connectToServer() {
   
           res.redirect('http://localhost:3000')
         } catch (error) {
-          console.log('error', error)
           res.redirect('http://localhost:3000/login')
         }
       } else {
@@ -82,17 +81,7 @@ async function connectToServer() {
     }
   )
 
-  // app.get('/auth/facebook',
-  //   passport.authenticate('facebook')
-  // )
-
-  // app.get('/auth/facebook/callback',
-  //   passport.authenticate('facebook')
-  // )
-
-  
-
-  const PORT = 4000
+  const PORT = config.port
 
   await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
 

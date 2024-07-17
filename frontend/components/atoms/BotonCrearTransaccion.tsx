@@ -6,7 +6,11 @@ import TransaccionModal from "../molecules/TransaccionModal";
 
 import { CREAR_TRANSACCION } from "@/graphql/transacciones/transacciones.mutation";
 
-export default function BotonCrearTransaccion() {
+interface Props {
+  onSuccessfulMutation?: () => void;
+}
+
+export default function BotonCrearTransaccion({ onSuccessfulMutation }: Props) {
   return (
     <TransaccionModal
       botonConfirmacion="Crear"
@@ -22,6 +26,7 @@ export default function BotonCrearTransaccion() {
         </Button>
       )}
       tituloModal="Crear Transacción"
+      onSuccessfulMutation={onSuccessfulMutation}
     />
   );
 }

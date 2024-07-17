@@ -31,7 +31,6 @@ export default function EliminarCuentaModal({
   } = useEliminarRegistro({
     id,
     gqlMutation: ELIMINAR_CUENTA,
-    pathToValidate: "/cuentas",
   });
 
   return (

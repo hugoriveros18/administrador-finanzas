@@ -6,7 +6,11 @@ import CuentaModal from "../molecules/CuentaModal";
 
 import { CREAR_CUENTA } from "@/graphql/cuentas/cuentas.mutation";
 
-export default function BotonCrearCuenta() {
+interface Props {
+  onSuccessfulMutation?: () => void;
+}
+
+export default function BotonCrearCuenta({ onSuccessfulMutation }: Props) {
   return (
     <CuentaModal
       botonConfirmacion="Crear"
@@ -22,6 +26,7 @@ export default function BotonCrearCuenta() {
         </Button>
       )}
       tituloModal="Crear Cuenta"
+      onSuccessfulMutation={onSuccessfulMutation}
     />
   );
 }

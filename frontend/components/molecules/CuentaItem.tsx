@@ -2,6 +2,7 @@ import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 
 import BotonEditarCuenta from "../atoms/BotonEditarCuenta";
+import SaldoCuenta from "../atoms/SaldoCuenta";
 
 import EliminarCuentaModal from "./EliminarCuentaModal";
 
@@ -15,7 +16,7 @@ export interface CuentaItemProps {
   color: string;
 }
 
-const calcTipoColor = (tipoCuenta: TipoCuenta) => {
+export const calcTipoColor = (tipoCuenta: TipoCuenta) => {
   switch (tipoCuenta) {
     case "ahorros":
       return "bg-green-600";
@@ -56,9 +57,7 @@ export default function CuentaItem({ ...cuenta }: CuentaItemProps) {
       </CardBody>
       <Divider className="bg-blueCharcoal" />
       <CardFooter>
-        <p>
-          <span className="font-semibold">Disponible:</span> $0
-        </p>
+        <SaldoCuenta id={cuenta.id} />
       </CardFooter>
     </Card>
   );

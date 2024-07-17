@@ -27,6 +27,7 @@ interface Props {
   tituloModal: string;
   botonConfirmacion: string;
   gqlMutation: DocumentNode;
+  onSuccessfulMutation?: () => void;
 }
 
 const DEFAUTL_CATEGORIA: Categoria = {
@@ -40,6 +41,7 @@ export default function CategoriaModal({
   tituloModal,
   botonConfirmacion,
   gqlMutation,
+  onSuccessfulMutation,
 }: Props) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -134,6 +136,7 @@ export default function CategoriaModal({
                     const result = await guardarCategoria();
 
                     if (result) {
+                      onSuccessfulMutation?.();
                       onClose();
                     }
                   }}

@@ -1,6 +1,6 @@
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { obtenerCuenta, verificarPermisosRolId, validarJwt } = require('../utils.js');
+const { obtenerCuenta, verificarPermisosRolId, validarJwt, disponibleCuenta } = require('../utils.js');
 const boom = require('@hapi/boom');
 
 const cuenta = async (_, args, context) => {
@@ -11,6 +11,13 @@ const cuenta = async (_, args, context) => {
   verificarPermisosRolId(userRol, userId, cuenta.dataValues.usuario)
 
   return cuenta.dataValues
+}
+const saldoCuenta = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+  const { id } = args
+  const saldo = await disponibleCuenta(id, userId)
+
+  return saldo;
 }
 const listaCuentas = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
@@ -88,6 +95,7 @@ const modificarCuenta = async (_, args, context) => {
 const resolvers = {
   Query: {
     cuenta,
+    saldoCuenta,
     listaCuentas
   },
   Mutation: {

@@ -1,10 +1,5 @@
 const typeDefs = `#graphql
 
-  enum TipoTransaccion {
-    ingreso
-    egreso
-  }
-
   type Categoria {
     id: Int!
     nombre: String!
@@ -19,6 +14,11 @@ const typeDefs = `#graphql
 
   type Query {
     categoria(id: Int!): Categoria
+    saldoCategoria(
+      id: Int!
+      year: Int
+      month: Int
+    ): Int!
     listaCategorias(usuario: String): ListaCategorias!
   }
 

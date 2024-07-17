@@ -18,11 +18,13 @@ import { CalendarDate } from "@internationalized/date";
 import { convertStringToCalendarDate, getCalendarDate } from "../utils";
 
 import useHandleTransaccion from "@/hooks/useHandleTransaccion";
+import { Tipo } from "@/hooks/useHandleCategoria";
 
 interface Transaccion {
   id?: number;
   valor: number;
   descripcion: string;
+  tipo: Tipo;
   fecha: CalendarDate | string;
   cuentaId: number;
   categoriaId: number;
@@ -34,11 +36,13 @@ interface Props {
   tituloModal: string;
   botonConfirmacion: string;
   gqlMutation: DocumentNode;
+  onSuccessfulMutation?: () => void;
 }
 
 const DEFAULT_TRANSACCION: Transaccion = {
   valor: 0,
   descripcion: "",
+  tipo: "ingreso",
   fecha: getCalendarDate(),
   cuentaId: 0,
   categoriaId: 0,
@@ -50,20 +54,23 @@ export default function TransaccionModal({
   tituloModal,
   botonConfirmacion,
   gqlMutation,
+  onSuccessfulMutation,
 }: Props) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const {
-    formValues: { descripcion, fecha, cuentaId, categoriaId },
+    formValues: { valor, descripcion, tipo, fecha, cuentaId, categoriaId },
     errorMessage,
-    tipoCategoria,
+    tipoCuenta,
     listaActualDeCategorias,
+    listaActualDeCuentas,
     handleValorChange,
     handleDescripcionChange,
     handleFechaChange,
     handleCuentaChange,
     handleCategoriaChange,
     actualizarTipoCategoria,
+    actualizarTipoCuenta,
     guardarTransaccion,
   } = useHandleTransaccion({
     gqlMutation,
@@ -87,10 +94,10 @@ export default function TransaccionModal({
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="">
+              <ModalHeader>
                 <h4>{tituloModal}</h4>
               </ModalHeader>
-              <ModalBody>
+              <ModalBody className="gap-4">
                 <Input
                   isRequired
                   classNames={{
@@ -106,6 +113,7 @@ export default function TransaccionModal({
                   radius="none"
                   size="md"
                   type="number"
+                  value={`${valor}`}
                   onChange={handleValorChange}
                 />
                 <Textarea
@@ -138,16 +146,18 @@ export default function TransaccionModal({
                   }
                   onChange={handleFechaChange}
                 />
-                <div className="w-full flex gap-3">
+                <div className="w-full flex gap-3 p-3 border-solid border-[rgba(0,0,0,0.5)] border-[1px]">
                   <Select
                     isRequired
-                    label="Tipo de Categoria"
-                    labelPlacement="outside"
-                    selectedKeys={[tipoCategoria]}
-                    onChange={actualizarTipoCategoria}
                     classNames={{
                       value: "capitalize",
                     }}
+                    label="Tipo Transacción"
+                    labelPlacement="outside"
+                    placeholder="Selecciona una opción"
+                    radius="none"
+                    selectedKeys={[tipo]}
+                    onChange={actualizarTipoCategoria}
                   >
                     {["ingreso", "egreso"].map((tipo) => (
                       <SelectItem
@@ -156,6 +166,76 @@ export default function TransaccionModal({
                         value={tipo}
                       >
                         {tipo}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <Select
+                    isRequired
+                    classNames={{
+                      value: "capitalize",
+                    }}
+                    label="Categoria"
+                    labelPlacement="outside"
+                    placeholder="Transporte"
+                    radius="none"
+                    selectedKeys={[
+                      categoriaId !== 0 ? categoriaId.toString() : "",
+                    ]}
+                    onChange={handleCategoriaChange}
+                  >
+                    {listaActualDeCategorias.map((ctg: any) => (
+                      <SelectItem
+                        key={ctg.id}
+                        className="capitalize"
+                        value={ctg.id}
+                      >
+                        {ctg.nombre}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                </div>
+                <div className="w-full flex gap-3 p-3 border-solid border-[rgba(0,0,0,0.5)] border-[1px]">
+                  <Select
+                    isRequired
+                    classNames={{
+                      value: "capitalize",
+                    }}
+                    label="Tipo Cuenta"
+                    labelPlacement="outside"
+                    placeholder="Selecciona una opción"
+                    radius="none"
+                    selectedKeys={[tipoCuenta]}
+                    onChange={actualizarTipoCuenta}
+                  >
+                    {["ahorros", "efectivo", "bolsillo"].map((tipo) => (
+                      <SelectItem
+                        key={tipo}
+                        className="capitalize"
+                        value={tipo}
+                      >
+                        {tipo}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <Select
+                    isRequired
+                    classNames={{
+                      value: "capitalize",
+                    }}
+                    label="Nombre"
+                    labelPlacement="outside"
+                    placeholder="Davivienda"
+                    radius="none"
+                    selectedKeys={[cuentaId !== 0 ? cuentaId.toString() : ""]}
+                    onChange={handleCuentaChange}
+                  >
+                    {listaActualDeCuentas.map((ctg: any) => (
+                      <SelectItem
+                        key={ctg.id}
+                        className="capitalize"
+                        value={ctg.id}
+                      >
+                        {ctg.nombre}
                       </SelectItem>
                     ))}
                   </Select>
@@ -177,6 +257,7 @@ export default function TransaccionModal({
 
                     if (result) {
                       onClose();
+                      onSuccessfulMutation && onSuccessfulMutation();
                     }
                   }}
                 >

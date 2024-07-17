@@ -1,8 +1,6 @@
-FROM node:latest
+FROM node:18
 
-RUN mkdir -p /custom/backend
-
-WORKDIR /custom/backend
+WORKDIR /usr/src/app
 
 COPY package.json .
 
@@ -12,4 +10,4 @@ COPY . .
 
 EXPOSE 4000
 
-RUN npm start
+CMD ["npm", "start"]

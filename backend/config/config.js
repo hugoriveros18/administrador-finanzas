@@ -3,7 +3,7 @@ dotenv.config();
 
 const config = {
   env: process.env.NODE_ENV || "development",
-  port: process.env.PORT || 4000,
+  port: process.env.PORT || '4000',
   db: {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -17,11 +17,6 @@ const config = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackUrl: process.env.GOOGLE_CALLBACK_URL
   },
-  facebook: {
-    clientId: process.env.FACEBOOK_APP_ID,
-    clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackUrl: process.env.FACEBOOK_CALLBACK_URL
-  }
 }
 
 module.exports = {

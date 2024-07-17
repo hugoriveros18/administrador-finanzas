@@ -1,5 +1,6 @@
 import BotonCrearTransaccion from "@/components/atoms/BotonCrearTransaccion";
 import { TransaccionIcon } from "@/components/atoms/Icons";
+import TablaTransacciones from "@/components/organism/TablaTransacciones";
 import { getClient } from "@/graphql/lib/apollorClient";
 import { EXISTEN_TRANSACCIONES } from "@/graphql/transacciones/transacciones.query";
 
@@ -36,14 +37,8 @@ export default async function Transacciones() {
 
   return (
     <section className="w-full">
-      <div className="w-full flex justify-end">
-        {/* <BotonCrearCuenta /> */}
-        EXISTEN TRANSACCIONES
-      </div>
-      <div className="w-full flex flex-wrap justify-center gap-5 mt-6">
-        {/* {listaCuentas.map((cuenta: any) => (
-          <CuentaItem key={cuenta.id} {...cuenta} />
-        ))} */}
+      <div className="w-full flex flex-wrap justify-center gap-5">
+        <TablaTransacciones />
       </div>
     </section>
   );

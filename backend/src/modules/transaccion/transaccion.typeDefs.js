@@ -1,19 +1,32 @@
 const typeDefs = `#graphql
 
+  enum TipoTransaccion {
+    ingreso
+    egreso
+  }
+
   type Transaccion {
     id: Int!
     valor: Int!
     descripcion: String!
+    tipo: TipoTransaccion!
     fecha: String!
     usuario: Usuario!
     cuenta: Cuenta!
     categoria: Categoria!
   }
 
+  type RespuestaListaTransacciones {
+    transacciones: [Transaccion]!
+    totalPaginas: Int!
+    totalTransacciones: Int!
+  }
+
   type RespuestaGeneralTransaccion {
     id: Int!
     valor: Int!
     descripcion: String!
+    tipo: TipoTransaccion!
     fecha: String!
     usuario: String!
     cuenta: Int!
@@ -28,10 +41,10 @@ const typeDefs = `#graphql
       usuarioId: String
       cuentaId: Int
       categoriaId:Int
-      tipoTransaccion: TipoTransaccion
+      tipo: TipoTransaccion
       pagina: Int
       itemsPorPagina: Int
-    ): [Transaccion]!
+    ): RespuestaListaTransacciones
     existenTransacciones: Boolean!
   }
 
@@ -39,20 +52,22 @@ const typeDefs = `#graphql
     crearTransaccion(
       valor: Int!
       descripcion: String!
+      tipo: TipoTransaccion!
       fecha: String!
-      usuarioId: String
       cuentaId: Int!
       categoriaId: Int!
+      usuarioId: String
     ): RespuestaGeneralTransaccion!
     eliminarTransaccion(id: Int!): Transaccion
     modificarTransaccion(
       id: Int!
-      valor: Int
+      valor: Int!
       descripcion: String
+      tipo: TipoTransaccion!
       fecha: String
       usuarioId: String
-      cuentaId: Int
-      categoriaId: Int
+      cuentaId: Int!
+      categoriaId: Int!
     ): Transaccion
   }
 `

@@ -1,6 +1,6 @@
-const { GraphQLError } = require('graphql');
 const { sequelize } = require('../context/index.js');
 const { models } = sequelize;
+const { Op, literal } = require('sequelize');
 const { randomUUID } = require('crypto');
 const boom = require('@hapi/boom');
 
@@ -28,6 +28,16 @@ const obtenerTransaccion = async (id) => {
     throw boom.notFound('Transacción no encontrada')
   }
   return transaccion
+}
+
+const obtenerMovimiento = async (id) => {
+  const movimiento = await models.Movimiento.findByPk(id, {
+    include: ['cuentaOrigenAsociada', 'cuentaDestinoAsociada', 'usuarioAsociado']
+  })
+  if(!movimiento) {
+    throw boom.notFound('Movimiento no encontrado')
+  }
+  return movimiento
 }
 
 const obtenerUsuarioPorId = async (id) => {
@@ -79,12 +89,74 @@ async function findOrCreateUser(profile) {
   return usuario.dataValues
 }
 
+async function disponibleCuenta(cuentaId, userId) {
+  const cuenta = await obtenerCuenta(cuentaId)
+
+  if(cuenta.usuario !== userId) {
+    throw boom.unauthorized('No tienes permisos para acceder a esta cuenta')
+  }
+
+
+  // Total transacciones de ingreso de la cuenta
+  const ingresosTransaccionesCuenta = await models.Transaccion.sum('valor', {
+    where: {
+      cuenta: cuentaId,
+      tipo: 'ingreso'
+    },
+  })
+
+  // Total transacciones de egresos de la cuenta
+  const egresosTransaccionesCuenta = await models.Transaccion.sum('valor' ,{
+    where: {
+      cuenta: cuentaId,
+      tipo: 'egreso'
+    },
+  })
+
+  // Total movimientos de ingreso de la cuenta
+  const ingresosMovimientosCuenta = await models.Movimiento.sum('valor', {
+    where: { cuentaDestino: cuentaId },
+  })
+
+  // Total movimientos de egresos de la cuenta
+  const egresosMovimientosCuenta = await models.Movimiento.sum('valor', {
+    where: { cuentaOrigen: cuentaId },
+  })
+
+  const total = (ingresosTransaccionesCuenta ?? 0) + (ingresosMovimientosCuenta ?? 0) - (egresosTransaccionesCuenta ?? 0) - (egresosMovimientosCuenta ?? 0)
+  return total
+}
+
+async function disponibleCategoria(categoriaId, year, month, userId) {
+  const categoria = await obtenerCategoria(categoriaId)
+
+  if(categoria.usuario !== userId) {
+    throw boom.unauthorized('No tienes permisos para acceder a esta categoría')
+  }
+
+  const whereConditions = {
+    [Op.and]: [{ categoria: categoriaId }]
+  }
+
+  if (year) whereConditions[Op.and].push(literal(`EXTRACT(YEAR FROM "fecha_transaccion") = ${year}`))
+  if (month) whereConditions[Op.and].push(literal(`EXTRACT(MONTH FROM "fecha_transaccion") = ${month}`))
+
+  const totalTransaccionesCategoria = await models.Transaccion.sum('valor', {
+    where: whereConditions,
+  })
+
+  return totalTransaccionesCategoria ?? 0
+}
+
 module.exports = {
   obtenerCategoria,
   obtenerCuenta,
   obtenerTransaccion,
+  obtenerMovimiento,
   obtenerUsuarioPorId,
   verificarPermisosRolId,
   validarJwt,
-  findOrCreateUser
+  findOrCreateUser,
+  disponibleCuenta,
+  disponibleCategoria,
 }

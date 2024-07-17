@@ -14,13 +14,24 @@ const typeDefs = `#graphql
 
   type LoginSuccess {
     usuario: Usuario!
-    token: String!
+  }
+
+  type ResumenFinanciero {
+    ingresos: Int!
+    egresos: Int!
+    balance: Int!
   }
 
   type Query {
     usuario(id: String): Usuario!
     listaUsuarios: [Usuario]
     isAuth: Boolean!
+    resumenFinanciero(
+      year: String
+      month: String
+    ): ResumenFinanciero!
+    disponibleCuenta: Int!
+    activeYears: [String]
   }
 
   type Mutation {

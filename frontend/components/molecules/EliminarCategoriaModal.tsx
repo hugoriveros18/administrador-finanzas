@@ -30,7 +30,6 @@ export default function EliminarCategoriaModal({
   } = useEliminarRegistro({
     id,
     gqlMutation: ELIMINAR_CATEGORIA,
-    pathToValidate: "/categorias",
   });
 
   return (

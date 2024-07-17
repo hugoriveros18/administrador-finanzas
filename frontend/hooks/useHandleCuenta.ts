@@ -97,6 +97,16 @@ export default function useHandleCuenta({
       });
 
       revalidatePathData({ path: "/cuentas" });
+      revalidatePathData({ path: "/transacciones" });
+
+      if (!id) {
+        setFormValues({
+          nombre: "",
+          tipoCuenta: "ahorros",
+          numeroCuenta: "",
+          color: "",
+        });
+      }
 
       return true;
     } catch (error) {

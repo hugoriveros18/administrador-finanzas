@@ -15,3 +15,16 @@ export async function revalidatePathData({
 }: RevalidateProps) {
   await revalidatePath(path, layout);
 }
+
+export async function revalidateAllPathsData() {
+  await revalidatePath("/");
+  await revalidatePath("/cuentas");
+  await revalidatePath("/categorias");
+  await revalidatePath("/transacciones");
+  await revalidatePath("/movimientos");
+}
+
+export async function revalidateInterestPathsData() {
+  await revalidatePath("/");
+  await revalidatePath("/cuentas");
+}

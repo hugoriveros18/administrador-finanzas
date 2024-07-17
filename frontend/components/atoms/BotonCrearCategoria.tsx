@@ -6,7 +6,11 @@ import CategoriaModal from "../molecules/CategoriaModal";
 
 import { CREAR_CATEGORIA } from "@/graphql/categorias/categorias.mutation";
 
-export default function BotonCrearCategoria() {
+interface Props {
+  onSuccessfulMutation?: () => void;
+}
+
+export default function BotonCrearCategoria({ onSuccessfulMutation }: Props) {
   return (
     <CategoriaModal
       botonConfirmacion="Crear"
@@ -22,6 +26,7 @@ export default function BotonCrearCategoria() {
         </Button>
       )}
       tituloModal="Crear Categoría"
+      onSuccessfulMutation={onSuccessfulMutation}
     />
   );
 }

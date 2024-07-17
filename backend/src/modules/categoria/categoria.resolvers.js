@@ -1,6 +1,6 @@
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { obtenerCategoria, verificarPermisosRolId, validarJwt } = require('../utils.js');
+const { obtenerCategoria, verificarPermisosRolId, validarJwt, disponibleCategoria } = require('../utils.js');
 const boom = require('@hapi/boom');
 
 const categoria = async (_, args, context) => {
@@ -11,6 +11,13 @@ const categoria = async (_, args, context) => {
   verificarPermisosRolId(userRol, userId, cuenta.dataValues.usuario)
 
   return categoria.dataValues
+}
+const saldoCategoria = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+  const { id, year, month } = args
+  const saldo = await disponibleCategoria(id, year, month, userId)
+
+  return saldo;
 }
 const listaCategorias = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
@@ -86,6 +93,7 @@ const modificarCategoria = async (_, args, context) => {
 const resolvers = {
   Query: {
     categoria,
+    saldoCategoria,
     listaCategorias
   },
   Mutation: {
