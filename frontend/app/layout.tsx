@@ -7,7 +7,6 @@ import { Providers } from "./providers";
 import Header from "@/components/organism/Header";
 import { fontLato } from "@/config/fonts";
 import { ApolloWrapper } from "@/graphql/lib/apolloWrapper";
-// import GraphqlProvider from "@/graphql/GraphqlProvider";
 
 export const metadata: Metadata = {
   title: {

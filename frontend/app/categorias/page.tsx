@@ -29,9 +29,9 @@ const colorCategoria = (tipo: Tipo) => {
 };
 
 export default async function Categorias() {
-  const { listaCategorias } = await getCategorias();
+  const data = await getCategorias();
 
-  if (!listaCategorias || listaCategorias.count === 0) {
+  if (!data?.listaCategorias || data?.listaCategorias.count === 0) {
     return (
       <section className="w-full flex justify-center items-center">
         <article className="w-full flex flex-col justify-center items-center">
@@ -47,7 +47,7 @@ export default async function Categorias() {
     );
   }
 
-  const { ingreso, egreso } = listaCategorias;
+  const { ingreso, egreso } = data.listaCategorias;
 
   return (
     <section className="w-full">

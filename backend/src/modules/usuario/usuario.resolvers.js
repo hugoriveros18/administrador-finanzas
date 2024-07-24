@@ -205,8 +205,7 @@ const resolvers = {
     isAuth,
     resumenFinanciero,
     disponibleCuenta,
-    activeYears,
-    prueba: () => "Hola mundo"
+    activeYears
   },
   Mutation: {
     crearUsuario,

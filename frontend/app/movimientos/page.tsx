@@ -17,9 +17,9 @@ async function getMovimientos() {
 }
 
 export default async function Movimientos() {
-  const { existenMovimientos } = await getMovimientos();
+  const data = await getMovimientos();
 
-  if (!existenMovimientos) {
+  if (!data?.existenMovimientos) {
     return (
       <section className="w-full flex justify-center items-center">
         <article className="w-full flex flex-col justify-center items-center">

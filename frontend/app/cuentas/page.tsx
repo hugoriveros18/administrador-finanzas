@@ -17,9 +17,9 @@ async function getCuentas() {
 }
 
 export default async function Cuentas() {
-  const { listaCuentas } = await getCuentas();
+  const data = await getCuentas();
 
-  if (listaCuentas.length === 0) {
+  if (!data?.listaCuentas || data?.listaCuentas.length === 0) {
     return (
       <section className="w-full flex justify-center items-center">
         <article className="w-full flex flex-col justify-center items-center">
@@ -41,7 +41,7 @@ export default async function Cuentas() {
         <BotonCrearCuenta />
       </div>
       <div className="w-full flex flex-wrap justify-center gap-5 mt-6">
-        {listaCuentas.map((cuenta: any) => (
+        {data.listaCuentas.map((cuenta: any) => (
           <CuentaItem key={cuenta.id} {...cuenta} />
         ))}
       </div>

@@ -17,9 +17,9 @@ async function getTransacciones() {
 }
 
 export default async function Transacciones() {
-  const { existenTransacciones } = await getTransacciones();
+  const data = await getTransacciones();
 
-  if (!existenTransacciones) {
+  if (!data?.existenTransacciones) {
     return (
       <section className="w-full flex justify-center items-center">
         <article className="w-full flex flex-col justify-center items-center">
