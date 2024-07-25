@@ -1,8 +1,53 @@
 version: '3.9'
 services:
+  postgres:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - ../storage/postgres_data:/var/lib/postgresql/data
+    networks:
+      - finanzas_network
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - 5050:80
+    networks:
+      - finanzas_network
   backend:
+    container_name: express_service
     build: 
       context: .
       dockerfile: Dockerfile
     ports:
       - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT}
+      - DB_HOST=postgres_db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+    depends_on:
+      - postgres
+    networks:
+      - finanzas_network
+volumes:
+  postgres_data:
+networks:
+  finanzas_network:
+    name: finanzas_network
+    driver: bridge

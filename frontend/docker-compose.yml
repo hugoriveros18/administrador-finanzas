@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  frontend:
+    container_name: next_frontend
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - finanzas_network
+networks:
+  finanzas_network:
+    external: true

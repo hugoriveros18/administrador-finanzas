@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+h1,
+h2,
+h3,
+p,
+span,
+a,
+input {
+  color: black;
+}
+
+.header-height-auto {
+  height: auto !important;
+}
+

@@ -10,19 +10,28 @@ const typeDefs = `#graphql
     nombre: String!
     apellidos: String!
     email: String!
-    totalIngresos: Int!
-    totalEgresos: Int!
-    totalAhorro: Int!
-    rol: Rol!
   }
 
-  type Login {
+  type LoginSuccess {
     usuario: Usuario!
-    token: String!
+  }
+
+  type ResumenFinanciero {
+    ingresos: Int!
+    egresos: Int!
+    balance: Int!
   }
 
   type Query {
+    usuario(id: String): Usuario!
     listaUsuarios: [Usuario]
+    isAuth: Boolean!
+    resumenFinanciero(
+      year: String
+      month: String
+    ): ResumenFinanciero!
+    disponibleCuenta: Int!
+    activeYears: [String]
   }
 
   type Mutation {
@@ -31,7 +40,8 @@ const typeDefs = `#graphql
       apellidos: String!
       email: String!
       password: String!
-    ): Usuario!
+      terminos: Boolean!
+    ): LoginSuccess!
     modificarInfoGeneralUsuario(
       id: String
       nombre: String
@@ -40,7 +50,7 @@ const typeDefs = `#graphql
     login(
       email: String!
       password: String!
-    ): Login!
+    ): LoginSuccess!
   }
 `
 

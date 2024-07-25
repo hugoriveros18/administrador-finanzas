@@ -1,6 +1,7 @@
 const { sequelize } = require('../../context/index.js');
 const { models } = sequelize
-const { obtenerCuenta, generarErrorGQL, verificarPermisosRolId, validarJwt } = require('../utils.js');
+const { obtenerCuenta, verificarPermisosRolId, validarJwt, disponibleCuenta } = require('../utils.js');
+const boom = require('@hapi/boom');
 
 const cuenta = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
@@ -11,6 +12,13 @@ const cuenta = async (_, args, context) => {
 
   return cuenta.dataValues
 }
+const saldoCuenta = async (_, args, context) => {
+  const { userId } = await validarJwt(context)
+  const { id } = args
+  const saldo = await disponibleCuenta(id, userId)
+
+  return saldo;
+}
 const listaCuentas = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
   const { usuario } = args
@@ -20,29 +28,34 @@ const listaCuentas = async (_, args, context) => {
   : await models.Cuenta.findAll({ where: { usuario: userId }})
 
   const cuentas = cuentasData.map(cuenta => cuenta.dataValues)
+
   return cuentas
 }
 const crearCuenta = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
-  const { nombre, entidadFinanciera, tipoCuenta, numeroCuenta, usuario } = args
+  const { nombre, tipoCuenta, numeroCuenta, usuario, color } = args
 
   if(userRol === 'admin' && !usuario) {
-    generarErrorGQL(
-      'El campo usuario es requerido para crear una cuenta como administrador',
-      'CAMPO_REQUERIDO',
-      400
-    )
+    throw boom.badRequest('El campo usuario es requerido para crear una cuenta como administrador')
   }
 
-  const cuenta = await models.Cuenta.create({
-    nombre,
-    entidadFinanciera,
-    tipoCuenta,
-    numeroCuenta,
-    usuario: userRol === 'admin' ? usuario : userId
-  })
+  try {
+    const cuenta = await models.Cuenta.create({
+      nombre,
+      tipoCuenta,
+      numeroCuenta,
+      color,
+      usuario: userRol === 'admin' ? usuario : userId
+    })
+  
+    return cuenta.dataValues
+  } catch (error) {
+    const errorType = error.errors?.[0]?.validatorKey
+    if(errorType === 'not_unique') {
+      throw boom.badRequest('El nombre de la cuenta ya existe')
+    }
+  }
 
-  return cuenta.dataValues
 }
 const eliminarCuenta = async (_, args, context) => {
   const { userId, userRol } = await validarJwt(context)
@@ -50,6 +63,12 @@ const eliminarCuenta = async (_, args, context) => {
   const cuenta = await obtenerCuenta(id)
 
   verificarPermisosRolId(userRol, userId, cuenta.dataValues.usuario)
+
+  const count = await models.Transaccion.count({ where: { cuenta: id }})
+
+  if(count > 0) {
+    throw boom.badRequest('No puedes eliminar una cuenta con transacciones asociadas')
+  }
 
   await cuenta.destroy()
   return cuenta.dataValues
@@ -61,13 +80,22 @@ const modificarCuenta = async (_, args, context) => {
 
   verificarPermisosRolId(userRol, userId, cuenta.dataValues.usuario)
 
-  const rta = await cuenta.update(cambios)
-  return rta.dataValues
+  try {
+    const rta = await cuenta.update(cambios)
+
+    return rta.dataValues
+  } catch (error) {
+    const errorType = error.errors?.[0]?.validatorKey
+    if(errorType === 'not_unique') {
+      throw boom.badRequest('El nombre de la cuenta ya existe')
+    }
+  }
 }
 
 const resolvers = {
   Query: {
     cuenta,
+    saldoCuenta,
     listaCuentas
   },
   Mutation: {

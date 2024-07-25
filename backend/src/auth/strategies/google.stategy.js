@@ -8,7 +8,6 @@ const GoogleStrategy = new Strategy({
   callbackURL: config.google.callbackUrl
 },
 function(accessToken, refreshToken, profile, cb) {
-  
   const user = findOrCreateUser(profile._json, 'google')
   return cb(null, user)
 })

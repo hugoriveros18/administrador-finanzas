@@ -1,5 +1,6 @@
 const { Categoria, categoriaSchema } = require("./categoria/categoria.model.js");
 const { Cuenta, cuentaSchema } = require("./cuenta/cuenta.model.js");
+const { Movimiento, movimientoSchema } = require("./movimiento/movimiento.model.js");
 const { Transaccion, transaccionSchema } = require("./transaccion/transaccion.model.js");
 const { Usuario, usuarioSchema } = require("./usuario/usuario.model.js");
 
@@ -9,11 +10,13 @@ function setupModels(sequelize) {
   Categoria.init(categoriaSchema, Categoria.config(sequelize));
   Transaccion.init(transaccionSchema, Transaccion.config(sequelize));
   Usuario.init(usuarioSchema, Usuario.config(sequelize));
+  Movimiento.init(movimientoSchema, Movimiento.config(sequelize));
 
   Cuenta.associate(sequelize.models);
   Categoria.associate(sequelize.models);
   Transaccion.associate(sequelize.models);
   Usuario.associate(sequelize.models);
+  Movimiento.associate(sequelize.models);
 }
 
 module.exports = {

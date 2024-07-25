@@ -15,19 +15,18 @@ const cuentaSchema = {
     type: DataTypes.STRING,
     unique: true
   },
-  entidadFinanciera: {
-    allowNull: false,
-    field: 'entidad_financiera',
-    type: DataTypes.STRING
-  },
   tipoCuenta: {
     allowNull: false,
     field: 'tipo_cuenta',
-    type: DataTypes.ENUM('efectivo' ,'ahorros', 'corriente', 'bolsillo', 'tarjeta de credito')
+    type: DataTypes.ENUM('efectivo' ,'ahorros','bolsillo',)
   },
   numeroCuenta: {
     allowNull: false,
     field: 'numero_cuenta',
+    type: DataTypes.STRING
+  },
+  color: {
+    allowNull: false,
     type: DataTypes.STRING
   },
   usuario: {
