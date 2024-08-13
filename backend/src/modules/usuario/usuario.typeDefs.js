@@ -21,6 +21,11 @@ const typeDefs = `#graphql
     egresos: Int!
     balance: Int!
   }
+  
+  type DisponibleCuenta {
+    disponible: Int!
+    ahorro: Int!
+  }
 
   type Query {
     usuario(id: String): Usuario!
@@ -30,8 +35,9 @@ const typeDefs = `#graphql
       year: String
       month: String
     ): ResumenFinanciero!
-    disponibleCuenta: Int!
+    disponibleCuenta: DisponibleCuenta!
     activeYears: [String]
+    test: String!
   }
 
   type Mutation {
