@@ -72,8 +72,13 @@ export default function Dashboard() {
           />
           <SummaryCard
             tipoDato="disponible"
-            title="Total Disponible"
-            value={disponibleCuenta}
+            title="Disponible"
+            value={disponibleCuenta.disponible}
+          />
+          <SummaryCard
+            tipoDato="disponible"
+            title="Ahorro"
+            value={disponibleCuenta.ahorro}
           />
         </div>
         <div className="flex gap-3">
@@ -129,37 +134,39 @@ export default function Dashboard() {
           />
         </div>
         <div className="flex flex-col gap-10 w-[25%]">
-          <div className="flex flex-col gap-2">
-            {listaCuentas.length > 0 ? (
-              listaCuentas.map((cuenta: any) => (
-                <DashboardCuentaItem key={cuenta.id} {...cuenta} />
-              ))
-            ) : (
-              <div className="w-full p-3 flex flex-col items-center gap-2 border-solid border-[1px] border-black">
-                <p className="text-sm font-semibold">
-                  No se encontraron cuentas registradas
-                </p>
-                <BotonCrearCuenta onSuccessfulMutation={refetch} />
-              </div>
-            )}
-          </div>
-          <div className="w-full">
-            {listaCategorias.count > 0 ? (
-              <DashboardCategoriaList
-                {...listaCategorias}
-                month={month}
-                year={year}
-              />
-            ) : (
-              <div className="w-full p-3 flex flex-col items-center gap-2 border-solid border-[1px] border-black">
-                <p className="text-sm font-semibold">
-                  No se encontraron categorías registradas
-                </p>
-                <BotonCrearCategoria onSuccessfulMutation={refetch} />
-              </div>
-            )}
-          </div>
+          {listaCategorias.count > 0 ? (
+            <DashboardCategoriaList
+              {...listaCategorias}
+              month={month}
+              year={year}
+            />
+          ) : (
+            <div className="w-full p-3 flex flex-col items-center gap-2 border-solid border-[1px] border-black">
+              <p className="text-sm font-semibold">
+                No se encontraron categorías registradas
+              </p>
+              <BotonCrearCategoria onSuccessfulMutation={refetch} />
+            </div>
+          )}
         </div>
+      </div>
+      <div
+        className={`w-full mt-16 ${listaCuentas.length > 0 ? "grid grid-cols-5 gap-4" : "flex justify-center"}`}
+      >
+        {listaCuentas.length > 0 ? (
+          listaCuentas.map((cuenta: any) => {
+            return cuenta.tipoCuenta === "bolsillo" ? null : (
+              <DashboardCuentaItem key={cuenta.id} {...cuenta} />
+            );
+          })
+        ) : (
+          <div className="w-full p-3 flex flex-col items-center gap-2 border-solid border-[1px] border-black">
+            <p className="text-sm font-semibold">
+              No se encontraron cuentas registradas
+            </p>
+            <BotonCrearCuenta onSuccessfulMutation={refetch} />
+          </div>
+        )}
       </div>
     </div>
   );

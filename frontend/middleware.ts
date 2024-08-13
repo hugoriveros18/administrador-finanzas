@@ -11,7 +11,6 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/movimientos")
   ) {
     let authToken = request.cookies.get("auth-token")?.value;
-    console.log('authTokenGeneral', authToken)
 
     if (!authToken) {
       return NextResponse.redirect(new URL("/login", request.url));
@@ -34,7 +33,6 @@ export async function middleware(request: NextRequest) {
       });
 
       const result = await response.json();
-      console.log('result', result)
 
       if (result.data.isAuth) {
         return NextResponse.next();
@@ -49,7 +47,6 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/signup")
   ) {
     let authToken = request.cookies.get("auth-token")?.value;
-    console.log('authTokenLogin', authToken)
 
     if (authToken) {
       return NextResponse.redirect(new URL("/", request.url));

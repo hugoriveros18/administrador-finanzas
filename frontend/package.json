@@ -5,7 +5,8 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
-		"start": "next start",
+		"start": "concurrently \" docker start express_service postgres_db backend-pgadmin-1 \" \" next start \" ",
+		"stop": "docker stop express_service postgres_db backend-pgadmin-1",
 		"create:frontend": "docker compose -f docker-compose.yml up -d",
 		"lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
 	},
@@ -45,6 +46,7 @@
 		"@typescript-eslint/parser": "^7.10.0",
 		"autoprefixer": "10.4.19",
 		"clsx": "^2.0.0",
+		"concurrently": "^8.2.2",
 		"eslint": "^8.56.0",
 		"eslint-config-next": "14.2.1",
 		"eslint-config-prettier": "^8.2.0",

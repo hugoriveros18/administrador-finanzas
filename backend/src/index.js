@@ -10,7 +10,6 @@ const jwt = require('jsonwebtoken')
 const { typeDefs, resolvers } = require('./schema/index.js');
 const { config } = require('../config/config.js');
 const cookieParser = require('cookie-parser');
-const { validarJwt } = require('./modules/utils.js');
 
 require('./auth/index.js')
 

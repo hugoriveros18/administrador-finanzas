@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt')
 const { randomUUID } = require('crypto')
 const jwt = require('jsonwebtoken')
 const { config } = require('../../../config/config.js');
-const { validarJwt, obtenerUsuarioPorId, verificarPermisosRolId } = require('../utils.js')
+const { validarJwt, obtenerUsuarioPorId, verificarPermisosRolId, disponibleCuenta: disponibleCuentaGeneral } = require('../utils.js')
 const boom = require('@hapi/boom');
 
 const UNA_DIA_EN_MS = 86400000
@@ -175,9 +175,19 @@ const disponibleCuenta = async (_, args, context) => {
     }
   })
 
+  const cuentasAhorro = await models.Cuenta.findAll({ where: { usuario: userId, tipoCuenta: 'bolsillo' }})
+  let ahorro = 0;
+  for (const cuenta of cuentasAhorro) {
+    const saldo = await disponibleCuentaGeneral(cuenta.dataValues.id, userId);
+    ahorro += saldo;
+  }
+
   const disponible = (ingresosData || 0) - (egresosData || 0)
 
-  return disponible;
+  return {
+    disponible: disponible - ahorro,
+    ahorro
+  };
 }
 const activeYears = async (_, args, context) => {
   const { userId } = await validarJwt(context)
@@ -205,7 +215,8 @@ const resolvers = {
     isAuth,
     resumenFinanciero,
     disponibleCuenta,
-    activeYears
+    activeYears,
+    test: () => 'test'
   },
   Mutation: {
     crearUsuario,

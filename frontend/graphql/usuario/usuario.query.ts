@@ -16,7 +16,10 @@ export const RESUMEN_FINANCIERO = gql`
       egresos
       balance
     }
-    disponibleCuenta
+    disponibleCuenta {
+      disponible
+      ahorro
+    }
     activeYears
     listaCuentas {
       id
